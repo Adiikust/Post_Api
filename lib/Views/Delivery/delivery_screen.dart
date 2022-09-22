@@ -33,7 +33,7 @@ class DeliveryScreen extends StatefulWidget {
 class _DeliveryScreenState extends State<DeliveryScreen> {
   late Box<String> storeMobileApiData;
   var isLoading = false;
-  var isButton = false;
+  bool isButton = false;
   var _articleId = "";
   var _transitState = "";
   var _location_Name = "";
@@ -61,6 +61,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   final TextEditingController _textArticleData = TextEditingController();
   final String txt = "DO";
 
+//UserData
   Future<void> fetchUserData({
     required String personalID,
     required String location,
@@ -98,6 +99,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     }
   }
 
+//Sys_id
   Future<void> fetchSysId({
     required String userId,
   }) async {
@@ -111,6 +113,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     }
   }
 
+//BarCode Scan
   _startBarcodeScanStream() async {
     return await FlutterBarcodeScanner.scanBarcode(
             '#ff6666', 'Cancel', true, ScanMode.BARCODE)
@@ -121,6 +124,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     });
   }
 
+//initState
   @override
   void initState() {
     super.initState();
@@ -345,14 +349,14 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                                                   MainAxisAlignment
                                                                       .center,
                                                               children: [
-                                                                Center(
+                                                                /* Center(
                                                                     child: Text(
                                                                         "$key",
                                                                         style:
                                                                             const TextStyle(
                                                                           fontSize:
                                                                               20,
-                                                                        ))),
+                                                                        ))),*/
                                                                 SizedBox(
                                                                   height: data
                                                                           .size
@@ -360,8 +364,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                                                       0.04,
                                                                 ),
                                                                 Text(
-                                                                  _articleId
-                                                                      .toString(),
+                                                                  "$key",
                                                                   style: const TextStyle(
                                                                       fontSize:
                                                                           20),
