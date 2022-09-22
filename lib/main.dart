@@ -10,6 +10,7 @@ void main() async {
   Directory document = await getApplicationDocumentsDirectory();
   Hive.init(document.path);
   await Hive.openBox<String>("Adnan");
+  await Hive.openBox("StoreBiId");
   await Hive.openBox('isUserLogin');
   runApp(MyApp());
 }

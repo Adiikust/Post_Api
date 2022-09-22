@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
@@ -31,11 +32,28 @@ class DeliveryScreen extends StatefulWidget {
 
 class _DeliveryScreenState extends State<DeliveryScreen> {
   late Box<String> storeMobileApiData;
+  var isLoading = false;
+  var isButton = false;
   var _articleId = "";
   var _transitState = "";
   var _location_Name = "";
   var _sysId = "";
-  var data = "";
+  var _data = "";
+  /*Future<void> _storeData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _upadate = (prefs.getString('counter') ?? _upadate.toString() + _data);
+      prefs.setString('counter', _upadate);
+      print(_upadate);
+    });
+  }*/
+  //Process
+  /*Future<void> _upLoadfile() async {
+    isLoading = true;
+    await Future.delayed(Duration(seconds: 3));
+    isLoading = false;
+  }*/
+  //
 
   String SelectedCurrentValue = "Change Status";
   final _formKey = GlobalKey<FormState>();
@@ -54,7 +72,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       Uri.parse('http://58.65.169.108:999/MobileAPP/ArticleUpdate'),
       body: {
         "BagTrackingNo": "$txt$locationId${DateTime.now().toString()}",
-        "Bag_Id": "0",
+        "Bag_Id": Hive.box('StoreBiId').get("data") ?? "0",
         "FromLocationId": locationId,
         "UserId": userId,
         "ShiftId": "1",
@@ -65,27 +83,16 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         "sys_Id": _sysId.toString(),
         "ExciseArticle": "0"
       },
-      /*body: {
-          //"ServiceTitles": "UMS",
-          "BagTrackingNo": "DO183420171012130216",
-          "Bag_Id": "0",
-          "FromLocationId": "1834",
-          "UserId": "1784",
-          "ShiftId": "1",
-          "_Articles": "10-UMS59466327",
-          "DA": "1753",
-          "_SheetNo": "217",
-          "_ClerkSheetNo": "1784-217",
-          "sys_Id": "",
-          "ExciseArticle": "0"
-        }*/
     );
     if (response.statusCode == 200) {
       var data = response.body.toString();
+      print(data);
       _articleId = jsonDecode(data)["ArticleNo"];
       _transitState = jsonDecode(data)["TransitState"];
       _location_Name = jsonDecode(data)["Location_Name"];
-      data = jsonDecode(data)["BagID"].toString();
+      _data = jsonDecode(data)["BagID"].toString();
+      Hive.box('StoreBiId').put("data", _data);
+      print(Hive.box('StoreBiId').get("data"));
     } else {
       print("No data");
     }
@@ -120,6 +127,11 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     fetchSysId(
       userId: widget.userId.toString(),
     );
+    Timer(const Duration(seconds: 2), () {
+      setState(() {
+        isLoading = !isLoading;
+      });
+    });
     storeMobileApiData = Hive.box<String>("adnan");
   }
 
@@ -158,75 +170,82 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     SizedBox(
                       height: data.size.height * 0.04,
                     ),
-                    TextFormField(
-                      controller: _scanArticleData,
-                      decoration: InputDecoration(
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 20),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50.0),
+                    Visibility(
+                      visible: isLoading,
+                      child: TextFormField(
+                        controller: _scanArticleData,
+                        decoration: InputDecoration(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 20),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50.0),
+                          ),
+                          hintText: "Enter the Article ",
                         ),
-                        hintText: "Enter the Article ",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter article';
+                          }
+                          return null;
+                        },
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter article';
-                        }
-                        return null;
-                      },
                     ),
                     SizedBox(
                       height: data.size.height * 0.04,
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            _startBarcodeScanStream();
-                          },
-                          child: Container(
-                            height: data.size.height * 0.05,
-                            width: data.size.width * 0.45,
-                            decoration: BoxDecoration(
-                                color: AppColors.kButton,
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Row(
-                                children: [
-                                  const Expanded(
-                                    flex: 1,
-                                    child: Icon(
-                                      Icons.document_scanner,
-                                      size: 21,
-                                      color: AppColors.kWhite,
+                    Visibility(
+                      visible: isLoading,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              _startBarcodeScanStream();
+                            },
+                            child: Container(
+                              height: data.size.height * 0.05,
+                              width: data.size.width * 0.45,
+                              decoration: BoxDecoration(
+                                  color: AppColors.kButton,
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Row(
+                                  children: [
+                                    const Expanded(
+                                      flex: 1,
+                                      child: Icon(
+                                        Icons.document_scanner,
+                                        size: 21,
+                                        color: AppColors.kWhite,
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(
-                                    width: data.size.height * 0.005,
-                                  ),
-                                  const Expanded(
-                                    flex: 7,
-                                    child: Text(
-                                      "BarCode Scan",
-                                      style: TextStyle(
-                                          fontSize: 17,
-                                          color: AppColors.kWhite),
+                                    SizedBox(
+                                      width: data.size.height * 0.005,
                                     ),
-                                  ),
-                                ],
+                                    const Expanded(
+                                      flex: 7,
+                                      child: Text(
+                                        "BarCode Scan",
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            color: AppColors.kWhite),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     SizedBox(
                       height: data.size.height * 0.04,
                     ),
                     InkWell(
                       onTap: () {
+                        // _upLoadfile();
                         if (_formKey.currentState!.validate()) {
                           final key = _scanArticleData.text;
                           final value = _textArticleData.text.toString();
@@ -249,6 +268,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                             color: AppColors.kButton,
                             borderRadius: BorderRadius.circular(10)),
                         child: const Text("Save",
+                            // isLoading ? "Processing" : "Save",
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
