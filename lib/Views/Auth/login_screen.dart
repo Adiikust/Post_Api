@@ -42,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen>
                     location: data["Location"].toString(),
                     personalID: data["LocationId"].toString(),
                     userId: data["UserID"].toString(),
+                    userFullName: data["UserFullName"].toString(),
                   )));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

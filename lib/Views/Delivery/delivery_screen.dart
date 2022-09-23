@@ -14,16 +14,19 @@ class DeliveryScreen extends StatefulWidget {
   late String? location;
   late String? locationId;
   late String? userId;
+  late String? userFullName;
   DeliveryScreen({
     String? personalID,
     String? location,
     String? locationId,
     String? userId,
+    String? userFullName,
   }) {
     this.personalID = personalID;
     this.location = location;
     this.locationId = locationId;
     this.userId = userId;
+    this.userFullName = userFullName;
   }
 
   @override
@@ -148,6 +151,141 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         return true;
       },
       child: Scaffold(
+        appBar: AppBar(
+          title: (const Text("Post Office")),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              UserAccountsDrawerHeader(
+                accountName: Text(
+                  widget.userFullName.toString(),
+                  style: const TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+                accountEmail: Text(
+                  widget.location.toString(),
+                  style: const TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+                currentAccountPicture: const CircleAvatar(
+                    backgroundImage: NetworkImage(
+                        "https://www.businesslist.pk/img/pk/s/1606670029-34-pakistan-post-office.jpg")),
+              ),
+              /*DrawerHeader(
+                decoration: const BoxDecoration(
+                  color: Colors.blue,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.userFullName.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                      ),
+                    ),
+                    Text(
+                      widget.location.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                      ),
+                    ),
+                  ],
+                ),
+              ),*/
+              ListTile(
+                leading: const Icon(Icons.article),
+                title: const Text('New Article'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.update),
+                title: const Text('Update Article'),
+                onTap: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Dialog(
+                          child: SizedBox(
+                            height: 300,
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  /* Center(
+                                                                    child: Text(
+                                                                        "$key",
+                                                                        style:
+                                                                            const TextStyle(
+                                                                          fontSize:
+                                                                              20,
+                                                                        ))),*/
+                                  SizedBox(
+                                    height: data.size.height * 0.04,
+                                  ),
+                                  const Text(
+                                    "",
+                                    style: TextStyle(fontSize: 20),
+                                  ),
+                                  SizedBox(
+                                    height: data.size.height * 0.04,
+                                  ),
+                                  Text(
+                                    _transitState.toString(),
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                  SizedBox(
+                                    height: data.size.height * 0.04,
+                                  ),
+                                  Text(
+                                    _location_Name.toString(),
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                  SizedBox(
+                                    height: data.size.height * 0.04,
+                                  ),
+                                  Center(
+                                    child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("Close")),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      });
+                },
+              ),
+              const Divider(
+                thickness: 3,
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('LogOut'),
+                onTap: () {
+                  Hive.box('isUserLogin').put('isUserLoggedIn', false);
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()));
+                },
+              ),
+            ],
+          ),
+        ),
         body: SingleChildScrollView(
           child: SafeArea(
             child: Padding(
