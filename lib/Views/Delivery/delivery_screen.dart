@@ -7,6 +7,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
 import 'package:post_app/Controller/Export/export_screen.dart';
+import 'package:post_app/Views/Update/update_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DeliveryScreen extends StatefulWidget {
@@ -40,28 +41,16 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   var _articleId = "";
   var _transitState = "";
   var _location_Name = "";
+  var _cusClient_Id = "";
+  var _recipientAddress = "";
+  var _recipientName = "";
   var _sysId = "";
   var _data = "";
-  /*Future<void> _storeData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _upadate = (prefs.getString('counter') ?? _upadate.toString() + _data);
-      prefs.setString('counter', _upadate);
-      print(_upadate);
-    });
-  }*/
-  //Process
-  /*Future<void> _upLoadfile() async {
-    isLoading = true;
-    await Future.delayed(Duration(seconds: 3));
-    isLoading = false;
-  }*/
-  //
 
-  String SelectedCurrentValue = "Change Status";
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _scanArticleData = TextEditingController();
   final TextEditingController _textArticleData = TextEditingController();
+  final TextEditingController _updateController = TextEditingController();
   final String txt = "DO";
 
 //UserData
@@ -94,6 +83,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       _articleId = jsonDecode(data)["ArticleNo"];
       _transitState = jsonDecode(data)["TransitState"];
       _location_Name = jsonDecode(data)["Location_Name"];
+      _cusClient_Id = jsonDecode(data)["CusClient_Id"].toString();
+      _recipientName = jsonDecode(data)["RecipientName"];
+      _recipientAddress = jsonDecode(data)["RecipientAddress"];
       _data = jsonDecode(data)["BagID"].toString();
       Hive.box('StoreBiId').put("data", _data);
       print(Hive.box('StoreBiId').get("data"));
@@ -175,30 +167,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     backgroundImage: NetworkImage(
                         "https://www.businesslist.pk/img/pk/s/1606670029-34-pakistan-post-office.jpg")),
               ),
-              /*DrawerHeader(
-                decoration: const BoxDecoration(
-                  color: Colors.blue,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.userFullName.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                      ),
-                    ),
-                    Text(
-                      widget.location.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                      ),
-                    ),
-                  ],
-                ),
-              ),*/
               ListTile(
                 leading: const Icon(Icons.article),
                 title: const Text('New Article'),
@@ -210,63 +178,112 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                 leading: const Icon(Icons.update),
                 title: const Text('Update Article'),
                 onTap: () {
-                  showDialog(
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => UpdateScreen(
+                                s: _cusClient_Id.toString(),
+                                add: _location_Name.toString(),
+                                rd: _recipientAddress.toString(),
+                                rn: _recipientName.toString(),
+                              )));
+                  /*showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return Dialog(
-                          child: SizedBox(
-                            height: 300,
+                          child: Container(
+                            height: data.size.height * 0.45,
                             child: Padding(
-                              padding: const EdgeInsets.all(10.0),
+                              padding: const EdgeInsets.only(left: 5, right: 5),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  /* Center(
-                                                                    child: Text(
-                                                                        "$key",
-                                                                        style:
-                                                                            const TextStyle(
-                                                                          fontSize:
-                                                                              20,
-                                                                        ))),*/
+                                  buildText("S : ${_cusClient_Id.toString()}"),
                                   SizedBox(
-                                    height: data.size.height * 0.04,
+                                    height: data.size.height * 0.02,
                                   ),
-                                  const Text(
-                                    "",
-                                    style: TextStyle(fontSize: 20),
+                                  buildText(
+                                      "S_City : ${_location_Name.toString()}"),
+                                  SizedBox(
+                                    height: data.size.height * 0.02,
+                                  ),
+                                  buildText(
+                                      "R_Name : ${_recipientName.toString()}"),
+                                  SizedBox(
+                                    height: data.size.height * 0.02,
+                                  ),
+                                  buildText(
+                                      "R_Address : ${_recipientAddress.toString()}"),
+                                  SizedBox(
+                                    height: data.size.height * 0.02,
+                                  ),
+                                  Center(
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                          color: Colors.black12,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(20.0))), //
+                                      width: double.infinity,
+                                      height: data.size.height * 0.050,
+                                      //  color: Colors.black12,
+                                      alignment: Alignment.center,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 5),
+                                        child: DropdownButton<String>(
+                                            underline: Container(),
+                                            items: _locations.map((String val) {
+                                              return DropdownMenuItem<String>(
+                                                value: val,
+                                                child: Text(val),
+                                              );
+                                            }).toList(),
+                                            hint: Text(_selectedLocation),
+                                            onChanged: (String? val) {
+                                              _selectedLocation = val!;
+                                              setState(() {});
+                                            }),
+                                      ),
+                                    ),
                                   ),
                                   SizedBox(
-                                    height: data.size.height * 0.04,
+                                    height: data.size.height * 0.02,
                                   ),
-                                  Text(
-                                    _transitState.toString(),
-                                    style: const TextStyle(fontSize: 20),
+                                  TextFormField(
+                                    controller: _updateController,
+                                    decoration: InputDecoration(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 20),
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(50.0),
+                                      ),
+                                      hintText: "Re-Mark",
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter article';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                   SizedBox(
-                                    height: data.size.height * 0.04,
-                                  ),
-                                  Text(
-                                    _location_Name.toString(),
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
-                                  SizedBox(
-                                    height: data.size.height * 0.04,
+                                    height: data.size.height * 0.02,
                                   ),
                                   Center(
                                     child: ElevatedButton(
                                         onPressed: () {
                                           Navigator.of(context).pop();
                                         },
-                                        child: const Text("Close")),
+                                        child: const Text("Update")),
                                   )
                                 ],
                               ),
                             ),
                           ),
                         );
-                      });
+                      });*/
                 },
               ),
               const Divider(
@@ -296,19 +313,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   //mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: IconButton(
-                          onPressed: () {
-                            Hive.box('isUserLogin')
-                                .put('isUserLoggedIn', false);
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const LoginScreen()));
-                          },
-                          icon: const Icon(Icons.logout)),
-                    ),
                     SizedBox(
                       height: data.size.height * 0.04,
                     ),
@@ -387,7 +391,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     ),
                     InkWell(
                       onTap: () {
-                        // _upLoadfile();
                         if (_formKey.currentState!.validate()) {
                           final key = _scanArticleData.text;
                           final value = _textArticleData.text.toString();
@@ -487,14 +490,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                                                   MainAxisAlignment
                                                                       .center,
                                                               children: [
-                                                                /* Center(
-                                                                    child: Text(
-                                                                        "$key",
-                                                                        style:
-                                                                            const TextStyle(
-                                                                          fontSize:
-                                                                              20,
-                                                                        ))),*/
                                                                 SizedBox(
                                                                   height: data
                                                                           .size
@@ -551,97 +546,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                                                 )
                                                               ],
                                                             ),
-                                                            /* FutureBuilder(
-                                                                future: fetchUserDara(
-                                                                    location: widget
-                                                                        .location!,
-                                                                    locationId: widget
-                                                                        .locationId!,
-                                                                    personalID: widget
-                                                                        .personalID!,
-                                                                    userId: widget
-                                                                        .userId!,
-                                                                    barCode:
-                                                                        _scanArticleData
-                                                                            .text),
-                                                                builder: (context,
-                                                                    AsyncSnapshot<
-                                                                            Userdatamodel>
-                                                                        snapshot) {
-                                                                  //  print("fgh$snapshot");
-                                                                  if (!snapshot
-                                                                      .hasData) {
-                                                                    return const Expanded(
-                                                                      flex: 1,
-                                                                      child: Text(
-                                                                          "Loading..."),
-                                                                    );
-                                                                  } else {
-                                                                    return Column(
-                                                                      crossAxisAlignment:
-                                                                          CrossAxisAlignment
-                                                                              .start,
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .center,
-                                                                      children: [
-                                                                        Center(
-                                                                            child: Text(
-                                                                                "$key",
-                                                                                style: const TextStyle(
-                                                                                  fontSize: 20,
-                                                                                ))),
-                                                                        SizedBox(
-                                                                          height: data.size.height *
-                                                                              0.04,
-                                                                        ),
-                                                                        Text(
-                                                                          widget
-                                                                              .location
-                                                                              .toString(),
-                                                                          style: const TextStyle(
-                                                                              fontSize:
-                                                                                  20),
-                                                                        ),
-                                                                        SizedBox(
-                                                                          height: data.size.height *
-                                                                              0.04,
-                                                                        ),
-                                                                        Text(
-                                                                          widget
-                                                                              .location
-                                                                              .toString(),
-                                                                          style: const TextStyle(
-                                                                              fontSize:
-                                                                                  20),
-                                                                        ),
-                                                                        SizedBox(
-                                                                          height: data.size.height *
-                                                                              0.04,
-                                                                        ),
-                                                                        Text(
-                                                                          widget
-                                                                              .locationId
-                                                                              .toString(),
-                                                                          style: const TextStyle(
-                                                                              fontSize:
-                                                                                  20),
-                                                                        ),
-                                                                        SizedBox(
-                                                                          height: data.size.height *
-                                                                              0.04,
-                                                                        ),
-                                                                        Center(
-                                                                          child: ElevatedButton(
-                                                                              onPressed: () {
-                                                                                Navigator.of(context).pop();
-                                                                              },
-                                                                              child: const Text("Close")),
-                                                                        )
-                                                                      ],
-                                                                    );
-                                                                  }
-                                                                }),*/
                                                           ),
                                                         ),
                                                       );
@@ -679,6 +583,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
+  Text buildText(String txt) {
+    return Text(
+      txt,
+      style: const TextStyle(fontSize: 18),
+    );
+  }
+
   int _counter = 0;
   Future<void> _incrementCounter() async {
     final prefs = await SharedPreferences.getInstance();
@@ -688,16 +599,3 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     });
   }
 }
-/*Card(
-                          child: ListTile(
-                            title: Text("$key",style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
-                            trailing: InkWell(
-                              onTap: (){
-                                storeMobileApiData.delete(key);
-                              },
-                              child: const Icon(Icons.delete),),
-                          ),
-                        );*/
-/*  InkWell(
-                                    onTap: (){},
-                                    child: Text("Saved",style: TextStyle(fontSize: 15),)),*/
