@@ -15,6 +15,8 @@ void main() async {
   await Hive.openBox<String>("Adnan");
   await Hive.openBox("StoreBiId");
   await Hive.openBox('isUserLogin');
+  await Hive.openBox('BookingProcessID');
+
   runApp(MyApp());
 }
 
@@ -25,7 +27,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         title: 'Mobile Api',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primarySwatch: Colors.red,
         ),
         debugShowCheckedModeBanner: false,
         home: const LoginScreen()

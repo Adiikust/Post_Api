@@ -46,6 +46,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   var _recipientName = "";
   var _sysId = "";
   var _data = "";
+  var _bookingProcessId = "";
 
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _scanArticleData = TextEditingController();
@@ -86,9 +87,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       _cusClient_Id = jsonDecode(data)["CusClient_Id"].toString();
       _recipientName = jsonDecode(data)["RecipientName"];
       _recipientAddress = jsonDecode(data)["RecipientAddress"];
+      _bookingProcessId = jsonDecode(data)["BookingprocessID"].toString();
       _data = jsonDecode(data)["BagID"].toString();
       Hive.box('StoreBiId').put("data", _data);
-      print(Hive.box('StoreBiId').get("data"));
     } else {
       print("No data");
     }
@@ -111,7 +112,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 //BarCode Scan
   _startBarcodeScanStream() async {
     return await FlutterBarcodeScanner.scanBarcode(
-            '#ff6666', 'Cancel', true, ScanMode.BARCODE)
+            'F44336FF', 'Cancel', true, ScanMode.BARCODE)
         .then((value) {
       setState(() {
         _scanArticleData.text = value;
@@ -186,6 +187,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                 add: _location_Name.toString(),
                                 rd: _recipientAddress.toString(),
                                 rn: _recipientName.toString(),
+                                bookingId: _bookingProcessId.toString(),
                               )));
                   /*showDialog(
                       context: context,

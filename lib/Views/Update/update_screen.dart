@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:post_app/Controller/Export/export_screen.dart';
 
 class UpdateScreen extends StatefulWidget {
@@ -6,33 +10,73 @@ class UpdateScreen extends StatefulWidget {
   late String? add;
   late String? rn;
   late String? rd;
+  late String? bookingId;
   UpdateScreen({
     String? s,
     String? add,
     String? rn,
     String? rd,
+    String? bookingId,
   }) {
     this.s = s;
     this.add = add;
     this.rn = rn;
     this.rd = rd;
+    this.bookingId = bookingId;
   }
 
   @override
   State<UpdateScreen> createState() => _UpdateScreenState();
 }
 
+//Controller
 final _formKey = GlobalKey<FormState>();
 final TextEditingController _updateController = TextEditingController();
-
+final TextEditingController _commentController = TextEditingController();
 String _selectedLocation = "Status";
 String _selectedSub = "Select Your SubStatus";
+
+var _update = "";
+
+Future<void> fetchUserData({
+  required String bookingProcessId,
+  required String articleTrackingNo,
+  required String transitStateId,
+  required String description,
+}) async {
+  final Response response = await http.post(
+    Uri.parse('http://58.65.169.108:999/MobileAPP/AddArticleUpdate'),
+    body: {
+      "Booking_Process_Id": bookingProcessId.toString(),
+      "Article_Tracking_No": articleTrackingNo,
+      "Transit_State": transitStateId,
+      "Description": description.toString(),
+    },
+    /* {
+        "Booking_Process_Id": "113970014411953",
+        "Article_Tracking_No": "UMS60318373",
+        "Transit_State": "Delivered",
+        "Description": "Adnan"
+      }*/
+  );
+  if (response.statusCode == 200) {
+    var data = response.body.toString();
+    _update = jsonDecode(data).toString();
+    Hive.box('BookingProcessID').put("data", _update).toString();
+    print(Hive.box('BookingProcessID').put("data", _update));
+    print("ok");
+  } else {
+    print("No data");
+  }
+}
 
 class _UpdateScreenState extends State<UpdateScreen> {
   String SelectedCurrentValue = "Change Status";
   String value = "";
   List<DropdownMenuItem<String>> menuitems = [];
   bool disabledropdown = true;
+
+  double opacit = 0.0;
 
   final delivered = {
     "1": "Others",
@@ -62,7 +106,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
     "7": "Others",
   };
   final missSent = {
-    "1": "Missent",
+    "1": "MisSent",
     "2": "Others",
   };
 
@@ -123,7 +167,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
     } else if (_value == "MissSent") {
       menuitems = [];
       populateMissSent();
-    }
+    } else {}
     setState(() {
       _selectedLocation = _value;
       disabledropdown = false;
@@ -133,6 +177,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   void secondselected(_value) {
     setState(() {
       _selectedSub = _value;
+      if (_value == "Others") {
+        opacit = 1.0;
+      } else {
+        opacit = 0.0;
+      }
     });
   }
 
@@ -207,19 +256,19 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        buildText("Sender : ${widget.s}"),
+                        buildText("Sender : "),
                         SizedBox(
                           height: data.size.height * 0.02,
                         ),
-                        buildText("S_Address : ${widget.add}"),
+                        buildText("S_Address : "),
                         SizedBox(
                           height: data.size.height * 0.02,
                         ),
-                        buildText("Recipient : ${widget.rn}"),
+                        buildText("Recipient : ${widget.rn ?? "Update"}"),
                         SizedBox(
                           height: data.size.height * 0.02,
                         ),
-                        buildText("R_Address : ${widget.rd}"),
+                        buildText("R_Address : ${widget.rd ?? "Update"}"),
                       ],
                     ),
                   ),
@@ -244,7 +293,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                         ),
                       ),
                       DropdownMenuItem<String>(
-                        value: "MissSent	",
+                        value: "MissSent",
                         child: Center(
                           child: Text("MissSent"),
                         ),
@@ -263,16 +312,50 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     hint: Text(_selectedSub),
                     disabledHint: const Text("First Select Your Field"),
                   ),
+                  Opacity(
+                    opacity: opacit,
+                    child: TextFormField(
+                      controller: _commentController,
+                      decoration: InputDecoration(
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(color: AppColors.kButton),
+                          borderRadius: BorderRadius.circular(5.5),
+                        ),
+                        enabledBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(),
+                        ),
+                        hintText: "Write Something... ",
+                      ),
+                    ),
+                  ),
                   SizedBox(
                     height: data.size.height * 0.04,
                   ),
                   Center(
                     child: ElevatedButton(
                         onPressed: () {
-                          _updateController.clear();
-                          Hive.box('Adnan')
-                              .put('_', _updateController.text.trim());
-                          Navigator.of(context).pop();
+                          if (_formKey.currentState!.validate()) {
+                            fetchUserData(
+                              articleTrackingNo: _updateController.text,
+                              bookingProcessId:
+                                  Hive.box('BookingProcessID').get("data") ??
+                                      widget.bookingId.toString(),
+                              description: _selectedSub.toString(),
+                              transitStateId: _selectedLocation,
+                            );
+                            Navigator.of(context).pop();
+                            _updateController.clear();
+                            _commentController.clear();
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return const AlertDialog(
+                                    title: Text("Update"),
+                                    content: Text("Successfully Update... "),
+                                  );
+                                });
+                          }
                         },
                         child: const Text("Update")),
                   ),
